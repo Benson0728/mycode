@@ -15,6 +15,6 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
     public void addInterceptors(InterceptorRegistry registry) {
         // 注册自定义的鉴权拦截器，并指定拦截的路径
         registry.addInterceptor(jwtInterceptor)
-                .addPathPatterns("/students/**","/teachers/**");
+                .addPathPatterns("/students/**","/teachers/**","/admins/**");
     }
 }

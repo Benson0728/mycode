@@ -6,6 +6,7 @@ import com.grade.result.LoginRes;
 import com.grade.result.Res;
 import com.grade.service.TeacherService;
 import com.grade.utils.JwtUtils;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,21 +20,25 @@ public class TeacherController {
     TeacherService teacherService;
 
     @PostMapping ("/login")   //教师登录
-    public LoginRes teacherLogin(Integer id, String password){
+    public LoginRes teacherLogin(long id, String password){
         Teacher teacher = teacherService.selectById(id);
         boolean check=password.equals(teacher.getPassword());
         if (check==true)return new LoginRes<>().success(JwtUtils.createToken(teacher.getId(),teacher.getName()));
         return new LoginRes<>().fail();
     }
 
-    @PutMapping("/{id}")  //修改密码
-    public Res updatePassword(@PathVariable long id,String password){
+    @PutMapping  //修改密码
+    public Res updatePassword(String password){
+        Claims claims = JwtUtils.getClaims();
+        long id= Long.valueOf(claims.get("ID").toString());
         Integer integer = teacherService.updatePassword(id, password);
         return integer==1?new Res<>().success():new Res<>().fail(Message.PASSWORD_EDIT_FAILED);
     }
 
-    @GetMapping("/grades/{teacherName}") //查询自己所教科目成绩
-    public Res checkGrades(@PathVariable String teacherName){
+    @GetMapping("/grades") //查询自己所教科目成绩
+    public Res checkGrades(){
+        Claims claims = JwtUtils.getClaims();
+        String teacherName= (String) claims.get("username");
         List<Course> list= teacherService.selectGrades(teacherName);
         return new Res<>().success(list);
     }
@@ -74,8 +79,10 @@ public class TeacherController {
         return new Res<>().success(page);
     }
 
-    @GetMapping("schedule/{teacherName}") //查看课表
-    public Res checkSchedule(@PathVariable String teacherName){
+    @GetMapping("schedule") //查看课表
+    public Res checkSchedule(){
+        Claims claims = JwtUtils.getClaims();
+        String teacherName= (String) claims.get("username");
         List<StuCourseTeacher> schedule = teacherService.checkSchedule(teacherName);
         return new Res<>().success(schedule);
     }

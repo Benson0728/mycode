@@ -30,7 +30,7 @@ public class TeacherService {
      * @param id
      * @return
      */
-    public Teacher selectById(Integer id){
+    public Teacher selectById(long id){
         Teacher teacher = teacherMapper.selectById(id);
         return teacher;
     }

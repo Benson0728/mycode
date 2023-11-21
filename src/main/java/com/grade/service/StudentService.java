@@ -4,13 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.grade.mapper.CourseMapper;
 import com.grade.mapper.StuCourseTeacherMapper;
 import com.grade.mapper.StuGradesMapper;
 import com.grade.mapper.StuMapper;
-import com.grade.pojo.PageResult;
-import com.grade.pojo.StuCourseTeacher;
-import com.grade.pojo.StuGrades;
-import com.grade.pojo.Student;
+import com.grade.pojo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +23,8 @@ public class StudentService {
     StuGradesMapper stuGradesMapper;
     @Autowired
     StuCourseTeacherMapper stuCourseTeacherMapper;
+    @Autowired
+    CourseMapper courseMapper;
 
 
     /**
@@ -94,29 +94,6 @@ public class StudentService {
         QueryWrapper<StuGrades> queryWrapper=new QueryWrapper<>();
         queryWrapper.eq("course_name",course);
         List<StuGrades>  list=stuGradesMapper.selectList(queryWrapper);
-//        Collections.sort(list, new Comparator<StuGrades>() {
-//            @Override
-//            public int compare(StuGrades o1, StuGrades o2) {
-//                Integer age1= (int) o1.getGrades();
-//                Integer age2= (int) o2.getGrades();
-//                return  age1.compareTo(age2);
-//            }
-//        });
-//        list.sort(new Comparator<StuGrades>() {
-//            @Override
-//            public int compare(StuGrades u1, StuGrades u2) {
-//                Integer age1= (int)u1.getGrades();
-//                Integer age2= (int)u2.getGrades();
-//                return  age1.compareTo(age2);
-//            }
-//        });
-//
-//        //List接口的sort方法，lambda表达式写法
-//        list.sort((u4,u5)->{
-//            Integer age1=(int) u4.getGrades();
-//            Integer age2=(int)u5.getGrades();
-//            return  age1.compareTo(age2);
-//        });
         Comparator<StuGrades> gradesComparator=Comparator.comparing(StuGrades::getGrades);
         list.sort(gradesComparator.reversed());
         return list;
@@ -144,5 +121,37 @@ public class StudentService {
         QueryWrapper<StuCourseTeacher> qw =new QueryWrapper<StuCourseTeacher>()
                 .eq("student_id",id);
         return stuCourseTeacherMapper.selectList(qw);
+    }
+
+    /**
+     * 学生排课
+     * @param day
+     * @param time
+     * @param courseName
+     * @param stuID
+     * @param stuName
+     * @return
+     */
+    public boolean chooseCourses(int day,int time,String courseName,long stuID,String stuName){
+        try {
+            QueryWrapper<StuCourseTeacher> qw1 = new QueryWrapper<StuCourseTeacher>()
+                    .eq("student_id", stuID);
+            List<StuCourseTeacher> list = stuCourseTeacherMapper.selectList(qw1);
+            for (StuCourseTeacher StuCourse : list) {
+                if (StuCourse.getDay() == day && StuCourse.getTime() == time) {
+                    return false;//撞课
+                }
+            }
+            QueryWrapper<Course> qw2 = new QueryWrapper<Course>()
+                    .eq("course_name", courseName);
+            Course course = courseMapper.selectOne(qw2);
+            String teacherName = course.getTeacherName();
+            StuCourseTeacher sct = new StuCourseTeacher(stuID, stuName, courseName, day, time, teacherName);
+            stuCourseTeacherMapper.insert(sct);
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 }

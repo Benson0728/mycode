@@ -9,8 +9,7 @@ import com.grade.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.lang.model.util.ElementKindVisitor14;
-import java.nio.channels.Pipe;
+
 import java.util.List;
 
 @RestController
@@ -20,7 +19,7 @@ public class TeacherController {
     TeacherService teacherService;
 
     @PostMapping ("/login")   //教师登录
-    public LoginRes studentLogin(Integer id, String password){
+    public LoginRes teacherLogin(Integer id, String password){
         Teacher teacher = teacherService.selectById(id);
         boolean check=password.equals(teacher.getPassword());
         if (check==true)return new LoginRes<>().success(JwtUtils.createToken(teacher.getId(),teacher.getName()));
@@ -28,7 +27,7 @@ public class TeacherController {
     }
 
     @PutMapping("/{id}")  //修改密码
-    public Res updatePassword(@PathVariable Integer id,String password){
+    public Res updatePassword(@PathVariable long id,String password){
         Integer integer = teacherService.updatePassword(id, password);
         return integer==1?new Res<>().success():new Res<>().fail(Message.PASSWORD_EDIT_FAILED);
     }

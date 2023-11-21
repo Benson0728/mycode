@@ -60,4 +60,13 @@ public class StudentController {
         List<StuCourseTeacher> schedules = studentService.checkSchedule(id);
         return new Res<>().success(schedules);
     }
+
+    @PutMapping("/chooseCourses/{course}") //学生选课
+    public Res chooseCourses(@PathVariable String course,int day,int time){
+        Claims claims = JwtUtils.getClaims();
+        long id= (Long) claims.get("ID");
+        String stuName=(String) claims.get("username");
+        boolean isSuccess = studentService.chooseCourses(day, time, course, id, stuName);
+        return isSuccess==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);
+    }
 }

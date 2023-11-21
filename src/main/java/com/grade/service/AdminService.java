@@ -1,8 +1,6 @@
 package com.grade.service;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.segments.MergeSegments;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -27,6 +25,19 @@ public class AdminService {
     StuCourseTeacherMapper stuCourseTeacherMapper;
     @Autowired
     ClassGradesMapper classGradesMapper;
+    @Autowired
+    StuGradesMapper stuGradesMapper;
+    @Autowired
+    ClassMapper classMapper;
+
+    /**
+     * 查管理员
+     * @param id
+     * @return
+     */
+    public Admin selectById(long id){
+        return adminMapper.selectById(id);
+    }
 
 
     /**
@@ -42,6 +53,13 @@ public class AdminService {
         return adminMapper.update(null, updateWrapper);
     }
 
+    /**
+     * 查班级
+     * @return
+     */
+    public List<Classes> selectClasses(){
+        return classMapper.selectList(null);
+    }
     /**
      * 按班级查看学生
      * @param clazz
@@ -74,7 +92,7 @@ public class AdminService {
         QueryWrapper<Teacher> qw=new QueryWrapper<Teacher>()
                 .like("name",name);
         IPage  page=new Page(current,size);
-        teacherMapper.selectPage(page,null);
+        teacherMapper.selectPage(page,qw);
         return new PageResult(page.getRecords(), page.getTotal());
     }
 
@@ -175,5 +193,86 @@ public class AdminService {
                 .select("course_name","day","time")
                 .eq("teacher_name",teacherName);
         return stuCourseTeacherMapper.selectList(qw);
+    }
+
+    /**
+     * 增加学生
+     * @param student
+     * @return
+     */
+    public boolean insertsStu(Student student){
+        Integer clazz=student.getClazz();
+        student.setPassword("123456");//默认密码123456
+        try{
+        UpdateWrapper<Classes> uw=new UpdateWrapper<Classes>()
+                .setSql("stu_num = stu_num + 1")
+                .eq("class_num",clazz);
+            classMapper.update(null,uw);//班级表人数加一
+            stuMapper.insert(student);
+        }catch (Exception e){
+            return false;//学号已存在
+        }
+        return true;
+    }
+
+    /**
+     * 删除学生（谨慎）
+     * @param ID
+     * @return
+     */
+    public boolean deleteStu(long ID){
+        try {
+            Integer clazz = stuMapper.selectById(ID).getClazz();
+            stuMapper.deleteById(ID);
+            QueryWrapper<StuCourseTeacher> qw1 = new QueryWrapper<StuCourseTeacher>()
+                    .eq("student_id", ID);
+            stuCourseTeacherMapper.delete(qw1);
+            QueryWrapper<StuGrades> qw2 = new QueryWrapper<StuGrades>()
+                    .eq("student_id", ID);
+            stuGradesMapper.delete(qw2);
+            UpdateWrapper<Classes> uw=new UpdateWrapper<Classes>()
+                    .setSql("stu_num = stu_num - 1")
+                    .eq("class_num",clazz);
+            classMapper.update(null,uw);//班级表人数减一
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 新增教师
+     * @param teacher
+     * @return
+     */
+    public boolean insertTeacher(Teacher teacher){
+        teacher.setPassword("123456");//默认密码123456
+        try {
+            teacherMapper.insert(teacher);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 删除教师（谨慎）
+     * @param ID
+     * @return
+     */
+    public boolean deleteTeacher(long ID){
+        try {
+            String name = teacherMapper.selectById(ID).getName();
+            teacherMapper.deleteById(ID);
+            QueryWrapper<StuCourseTeacher> qw1=new QueryWrapper<StuCourseTeacher>()
+                .eq("teacher_name",name);
+        stuCourseTeacherMapper.delete(qw1);
+    }catch (Exception e){
+        e.printStackTrace();
+        return false;
+        }
+        return true;
     }
 }

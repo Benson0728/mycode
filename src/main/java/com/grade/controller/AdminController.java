@@ -8,7 +8,9 @@ import com.grade.service.AdminService;
 import com.grade.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -118,5 +120,12 @@ public class AdminController {
     public Res deleteTeacher(@PathVariable long id){
         boolean delete = adminService.deleteTeacher(id);
         return delete==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);
+    }
+
+    @PostMapping("/import/students")
+    public Res importStudents(@RequestParam("file")MultipartFile file) throws IOException {
+        boolean importRes=adminService.importStudents(file.getInputStream());
+        return importRes==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);
+
     }
 }

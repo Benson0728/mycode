@@ -1,14 +1,17 @@
 package com.grade.service;
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.grade.listener.ExcelListener;
 import com.grade.mapper.*;
 import com.grade.pojo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.InputStream;
 import java.util.List;
 
 @Service
@@ -272,6 +275,26 @@ public class AdminService {
     }catch (Exception e){
         e.printStackTrace();
         return false;
+        }
+        return true;
+    }
+
+    /**
+     * excel导入学生
+     * @param inputStream
+     * @return
+     */
+    public boolean importStudents(InputStream inputStream){
+        try {
+            ExcelListener excelListener = new ExcelListener();
+            EasyExcel.read(inputStream, Student.class, excelListener).sheet().doRead();
+            List<Student> studentList = excelListener.getData();
+            for (Student student : studentList) {
+                stuMapper.insert(student);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
         }
         return true;
     }

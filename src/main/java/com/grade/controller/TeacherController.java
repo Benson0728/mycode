@@ -79,7 +79,7 @@ public class TeacherController {
         return new Res<>().success(page);
     }
 
-    @GetMapping("schedule") //查看课表
+    @GetMapping("/schedule") //查看课表
     public Res checkSchedule(){
         Claims claims = JwtUtils.getClaims();
         String teacherName= (String) claims.get("username");

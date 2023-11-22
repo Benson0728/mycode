@@ -86,4 +86,22 @@ public class TeacherController {
         List<StuCourseTeacher> schedule = teacherService.checkSchedule(teacherName);
         return new Res<>().success(schedule);
     }
+
+    @PutMapping("/common/{course}/{stuId}") //录入平时成绩
+    public Res enterCommonGrades(@PathVariable("course") String course,@PathVariable("stuId") long stuId,Integer grade){
+        boolean enter = teacherService.enterCommonGrades(stuId, course, grade);
+        return enter==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);
+    }
+
+    @PutMapping("/final/{course}/{stuId}") //录入期末成绩
+    public Res enterFinalGrades(@PathVariable("course") String course,@PathVariable("stuId") long stuId,Integer grade){
+        boolean enter = teacherService.enterFinalGrades(stuId, course, grade);
+        return enter==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);
+    }
+
+    @PutMapping("/generate/{course}/{stuId}") //计算总成绩
+    public Res generateGrades(@PathVariable("course") String course,@PathVariable("stuId") long stuId){
+        boolean generate = teacherService.generateGrades(stuId, course);
+        return generate==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);
+    }
 }

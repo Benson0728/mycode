@@ -164,4 +164,75 @@ public class TeacherService {
                         .eq("teacher_name",teacherName);
         return stuCourseTeacherMapper.selectList(qw);
     }
+
+    /**
+     * 录入平时成绩
+     * @param stuID
+     * @param courseName
+     * @param grade
+     * @return
+     */
+    public boolean enterCommonGrades(long stuID,String courseName,Integer grade){
+        try {
+        UpdateWrapper<StuGrades> uw=new UpdateWrapper<StuGrades>()
+                .eq("student_id",stuID)
+                .eq("course_name",courseName)
+                .setSql("common_grades ="+grade);
+        stuGradesMapper.update(null,uw);
+        }catch (Exception e){
+                e.printStackTrace();
+                return false;}
+                 return true;
+    }
+
+    /**
+     * 录入期末成绩
+     * @param stuID
+     * @param courseName
+     * @param grade
+     * @return
+     */
+    public boolean enterFinalGrades(long stuID,String courseName,Integer grade){
+        try {
+            UpdateWrapper<StuGrades> uw=new UpdateWrapper<StuGrades>()
+                    .eq("student_id",stuID)
+                    .eq("course_name",courseName)
+                    .setSql("final_grades ="+ grade);
+            stuGradesMapper.update(null,uw);
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;}
+        return true;
+    }
+
+    /**
+     * 计算总成绩
+     * @param stuId
+     * @param courseName
+     * @return
+     */
+    public boolean generateGrades(long stuId,String courseName){
+        try {
+        QueryWrapper<StuGrades> qw=new QueryWrapper<StuGrades>()
+                .eq("student_id",stuId)
+                .eq("course_name",courseName);
+        StuGrades stuGrades = stuGradesMapper.selectOne(qw);
+        Integer commonGrades = stuGrades.getCommonGrades();
+        Integer finalGrades = stuGrades.getFinalGrades();
+        if (commonGrades!=0&& finalGrades !=0){
+            Course course = courseMapper.selectOne(new QueryWrapper<Course>()
+                    .eq("course_name", courseName));
+            float grades=course.getCommonGradePercent()*commonGrades+course.getFinalGradePercent()* finalGrades;
+            stuGradesMapper.update(null,new UpdateWrapper<StuGrades>()
+                    .eq("student_id",stuId)
+                    .eq("course_name",courseName)
+                    .setSql("grades ="+grades));
+            return true;
+        }
+      }catch (Exception e){
+               e.printStackTrace();
+               return false;
+        }
+               return false;
+    }
  }

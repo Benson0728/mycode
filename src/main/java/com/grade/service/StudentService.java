@@ -125,29 +125,45 @@ public class StudentService {
 
     /**
      * 学生排课
-     * @param day
-     * @param time
      * @param courseName
      * @param stuID
      * @param stuName
      * @return
      */
-    public boolean chooseCourses(int day,int time,String courseName,long stuID,String stuName){
+    public boolean chooseCourses(String courseName,long stuID,String stuName){
         try {
+            QueryWrapper<StuCourseTeacher> qw=new QueryWrapper<StuCourseTeacher>()
+                    .eq("course_name",courseName)
+                    .select("course_name","day","time");
+            List<StuCourseTeacher> courseList = stuCourseTeacherMapper.selectList(qw);
             QueryWrapper<StuCourseTeacher> qw1 = new QueryWrapper<StuCourseTeacher>()
                     .eq("student_id", stuID);
             List<StuCourseTeacher> list = stuCourseTeacherMapper.selectList(qw1);
-            for (StuCourseTeacher StuCourse : list) {
-                if (StuCourse.getDay() == day && StuCourse.getTime() == time) {
-                    return false;//撞课
+
+            for (StuCourseTeacher courseLists : courseList) {
+                Integer day = courseLists.getDay();
+                Integer time = courseLists.getTime();
+                for (StuCourseTeacher StuCourse : list) {
+                    if (StuCourse.getDay() == day && StuCourse.getTime() == time) {
+                        return false;//撞课
+                    }
                 }
             }
+
             QueryWrapper<Course> qw2 = new QueryWrapper<Course>()
                     .eq("course_name", courseName);
             Course course = courseMapper.selectOne(qw2);
             String teacherName = course.getTeacherName();
+
+            for (StuCourseTeacher courseLists : courseList) {
+                Integer day = courseLists.getDay();
+                Integer time = courseLists.getTime();
             StuCourseTeacher sct = new StuCourseTeacher(stuID, stuName, courseName, day, time, teacherName);
             stuCourseTeacherMapper.insert(sct);
+            }
+
+            Integer clazz = stuMapper.selectById(stuID).getClazz();
+            stuGradesMapper.insert(new StuGrades(stuID,stuName,clazz,courseName,0,0,0));
         }catch (Exception e){
             e.printStackTrace();
             return false;

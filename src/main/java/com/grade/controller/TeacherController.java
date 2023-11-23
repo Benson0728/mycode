@@ -9,8 +9,10 @@ import com.grade.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -103,5 +105,17 @@ public class TeacherController {
     public Res generateGrades(@PathVariable("course") String course,@PathVariable("stuId") long stuId){
         boolean generate = teacherService.generateGrades(stuId, course);
         return generate==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);
+    }
+
+    @PutMapping("/import/common") //excel导入平时成绩
+    public Res importCommonGrades(@RequestParam("file")MultipartFile file) throws IOException {
+        boolean isImport = teacherService.excelImportCommonGrades(file.getInputStream());
+        return isImport==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);
+    }
+
+    @PutMapping("/import/final") //excel导入平时成绩
+    public Res importFinalGrades(@RequestParam("file")MultipartFile file) throws IOException {
+        boolean isImport = teacherService.excelImportFinalGrades(file.getInputStream());
+        return isImport==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);
     }
 }

@@ -64,7 +64,7 @@ public class StudentController {
     @PutMapping("/chooseCourses/{course}") //学生选课
     public Res chooseCourses(@PathVariable String course){
         Claims claims = JwtUtils.getClaims();
-        long id= (Long) claims.get("ID");
+        long id=Long.valueOf (claims.get("ID").toString());
         String stuName=(String) claims.get("username");
         boolean isSuccess = studentService.chooseCourses(course, id, stuName);
         return isSuccess==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);

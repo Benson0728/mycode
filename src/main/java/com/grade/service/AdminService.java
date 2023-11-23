@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.grade.listener.ExcelListener;
+import com.grade.listener.StudentExcelListener;
 import com.grade.mapper.*;
 import com.grade.pojo.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -286,9 +286,9 @@ public class AdminService {
      */
     public boolean importStudents(InputStream inputStream){
         try {
-            ExcelListener excelListener = new ExcelListener();
-            EasyExcel.read(inputStream, Student.class, excelListener).sheet().doRead();
-            List<Student> studentList = excelListener.getData();
+            StudentExcelListener studentExcelListener = new StudentExcelListener();
+            EasyExcel.read(inputStream, Student.class, studentExcelListener).sheet().doRead();
+            List<Student> studentList = studentExcelListener.getData();
             for (Student student : studentList) {
                 stuMapper.insert(student);
             }

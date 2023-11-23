@@ -1,15 +1,19 @@
 package com.grade.service;
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.grade.listener.StuCommonExcelListener;
+import com.grade.listener.StuFinalExcelListener;
 import com.grade.mapper.*;
 import com.grade.pojo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
+import java.io.InputStream;
 import java.util.List;
 
 @Service
@@ -234,5 +238,59 @@ public class TeacherService {
                return false;
         }
                return false;
+    }
+
+    /**
+     * excel导入平时成绩
+     * @param inputStream
+     * @return
+     */
+    public boolean excelImportCommonGrades(InputStream inputStream){
+        try {
+            StuCommonExcelListener stuCommonExcelListener=new StuCommonExcelListener();
+            EasyExcel.read(inputStream, StuCommon.class,stuCommonExcelListener).sheet().doRead();
+            List<StuCommon> commonList=stuCommonExcelListener.getData();
+            for (StuCommon stuCommon : commonList) {
+                long id = stuCommon.getId();
+                String courseName = stuCommon.getCourseName();
+                Integer commonGrades = stuCommon.getCommonGrades();
+                UpdateWrapper<StuGrades> uw=new UpdateWrapper<StuGrades>()
+                        .eq("student_id",id)
+                        .eq("course_name",courseName)
+                        .setSql("common_grades ="+commonGrades);
+                stuGradesMapper.update(null,uw);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * excel导入期末成绩
+     * @param inputStream
+     * @return
+     */
+    public boolean excelImportFinalGrades(InputStream inputStream){
+        try {
+            StuFinalExcelListener stuFinalExcelListener=new StuFinalExcelListener();
+            EasyExcel.read(inputStream, StuFinal.class,stuFinalExcelListener).sheet().doRead();
+            List<StuFinal> finalList=stuFinalExcelListener.getData();
+            for (StuFinal stuFinal : finalList) {
+                long id = stuFinal.getId();
+                String courseName = stuFinal.getCourseName();
+                Integer finalGrades = stuFinal.getFinalGrades();
+                UpdateWrapper<StuGrades> uw=new UpdateWrapper<StuGrades>()
+                        .eq("student_id",id)
+                        .eq("course_name",courseName)
+                        .setSql("final_grades ="+finalGrades);
+                stuGradesMapper.update(null,uw);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
  }

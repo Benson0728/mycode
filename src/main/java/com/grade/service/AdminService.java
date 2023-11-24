@@ -32,6 +32,8 @@ public class AdminService {
     StuGradesMapper stuGradesMapper;
     @Autowired
     ClassMapper classMapper;
+    @Autowired
+    TeacherCourseMapper teacherCourseMapper;
 
     /**
      * 查管理员
@@ -142,6 +144,7 @@ public class AdminService {
      * @param courseName
      * @return
      */
+
     public boolean deleteCourse(String courseName){
         try {
         QueryWrapper<Course> qw=new QueryWrapper<Course>()
@@ -153,6 +156,9 @@ public class AdminService {
         QueryWrapper<ClassGrades> qw3=new QueryWrapper<ClassGrades>()
                 .eq("course_name",courseName);
         classGradesMapper.delete(qw3);
+        QueryWrapper<TeacherCourse> qw4=new QueryWrapper<TeacherCourse>()
+                .eq("course_name",courseName);
+        teacherCourseMapper.delete(qw4);
         return true;
         }catch (Exception e){
             e.printStackTrace();
@@ -167,22 +173,24 @@ public class AdminService {
      * @param courseName
      * @return
      */
+
+
     public boolean Scheduling(int day,int time,String courseName){
         Course course=selectOneCourse(courseName);
         String teacher=course.getTeacherName();
-        QueryWrapper<StuCourseTeacher> qw=new QueryWrapper<StuCourseTeacher>()
+        QueryWrapper<TeacherCourse> qw=new QueryWrapper<TeacherCourse>()
                 .eq("teacher_name",teacher);
-        List<StuCourseTeacher> list = stuCourseTeacherMapper.selectList(qw);
+        List<TeacherCourse> list = teacherCourseMapper.selectList(qw);
         //查看老师方面是否撞课
-        for (StuCourseTeacher courseTeacher : list) {
+        for (TeacherCourse courseTeacher : list) {
             if(day==courseTeacher.getDay()&&time==courseTeacher.getTime()){return false;}
         }
-        StuCourseTeacher sct=new StuCourseTeacher();
-        sct.setDay(day);
-        sct.setTime(time);
-        sct.setCourseName(courseName);
-        sct.setTeacherName(teacher);
-        stuCourseTeacherMapper.insert(sct);
+        TeacherCourse tc=new TeacherCourse();
+        tc.setTeacherName(teacher);
+        tc.setDay(day);
+        tc.setTime(time);
+        tc.setCourseName(courseName);
+        teacherCourseMapper.insert(tc);
         return true;
     }
 
@@ -191,11 +199,11 @@ public class AdminService {
      * @param teacherName
      * @return
      */
-    public List<StuCourseTeacher> checkScheduleByTeacher(String teacherName){
-        QueryWrapper<StuCourseTeacher> qw=new QueryWrapper<StuCourseTeacher>()
+    public List<TeacherCourse> checkScheduleByTeacher(String teacherName){
+        QueryWrapper<TeacherCourse> qw=new QueryWrapper<TeacherCourse>()
                 .select("course_name","day","time")
                 .eq("teacher_name",teacherName);
-        return stuCourseTeacherMapper.selectList(qw);
+        return teacherCourseMapper.selectList(qw);
     }
 
     /**
@@ -271,7 +279,10 @@ public class AdminService {
             teacherMapper.deleteById(ID);
             QueryWrapper<StuCourseTeacher> qw1=new QueryWrapper<StuCourseTeacher>()
                 .eq("teacher_name",name);
-        stuCourseTeacherMapper.delete(qw1);
+            stuCourseTeacherMapper.delete(qw1);
+            QueryWrapper<TeacherCourse> qw2=new QueryWrapper<TeacherCourse>()
+                    .eq("teacher_name",name);
+            teacherCourseMapper.delete(qw2);
     }catch (Exception e){
         e.printStackTrace();
         return false;

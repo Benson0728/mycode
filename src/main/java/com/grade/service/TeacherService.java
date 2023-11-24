@@ -28,6 +28,8 @@ public class TeacherService {
     ClassGradesMapper classGradesMapper;
     @Autowired
     StuGradesMapper stuGradesMapper;
+    @Autowired
+    TeacherCourseMapper teacherCourseMapper;
 
     /**
      * 查老师信息
@@ -162,11 +164,12 @@ public class TeacherService {
      * @param teacherName
      * @return
      */
-    public List<StuCourseTeacher> checkSchedule(String teacherName){
-        QueryWrapper<StuCourseTeacher> qw=new QueryWrapper<StuCourseTeacher>()
+
+    public List<TeacherCourse> checkSchedule(String teacherName){
+        QueryWrapper<TeacherCourse> qw=new QueryWrapper<TeacherCourse>()
                         .select("course_name","day","time")
                         .eq("teacher_name",teacherName);
-        return stuCourseTeacherMapper.selectList(qw);
+        return teacherCourseMapper.selectList(qw);
     }
 
     /**
@@ -287,6 +290,35 @@ public class TeacherService {
                         .setSql("final_grades ="+finalGrades);
                 stuGradesMapper.update(null,uw);
             }
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 生成班级科目总成绩
+     * @param clazz
+     * @param courseName
+     * @return
+     */
+    public boolean generateClassGrades(Integer clazz,String courseName){
+        try {
+            float total = 0;
+            Integer num = 0;
+            QueryWrapper<StuGrades> qw = new QueryWrapper<StuGrades>()
+                    .eq("class", clazz)
+                    .eq("course_name", courseName);
+            List<StuGrades> list = stuGradesMapper.selectList(qw);
+            for (StuGrades stuGrades : list) {
+                float grades = stuGrades.getGrades();
+                total += grades;
+                num++;
+            }
+            float ave = total / num;
+            ClassGrades cg = new ClassGrades(clazz, courseName, ave);
+            classGradesMapper.insert(cg);
         }catch (Exception e){
             e.printStackTrace();
             return false;

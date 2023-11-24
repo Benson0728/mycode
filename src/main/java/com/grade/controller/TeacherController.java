@@ -85,7 +85,7 @@ public class TeacherController {
     public Res checkSchedule(){
         Claims claims = JwtUtils.getClaims();
         String teacherName= (String) claims.get("username");
-        List<StuCourseTeacher> schedule = teacherService.checkSchedule(teacherName);
+        List<TeacherCourse> schedule = teacherService.checkSchedule(teacherName);
         return new Res<>().success(schedule);
     }
 
@@ -101,7 +101,7 @@ public class TeacherController {
         return enter==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);
     }
 
-    @PutMapping("/generate/{course}/{stuId}") //计算总成绩
+    @PutMapping("/generate/student/{course}/{stuId}") //计算总成绩
     public Res generateGrades(@PathVariable("course") String course,@PathVariable("stuId") long stuId){
         boolean generate = teacherService.generateGrades(stuId, course);
         return generate==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);
@@ -117,5 +117,12 @@ public class TeacherController {
     public Res importFinalGrades(@RequestParam("file")MultipartFile file) throws IOException {
         boolean isImport = teacherService.excelImportFinalGrades(file.getInputStream());
         return isImport==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);
+    }
+
+    @PutMapping("/generate/class/{class}/{course}") //班级科目平均成绩
+    public Res generateClassGrades(@PathVariable("class") Integer clazz,@PathVariable("course") String courseName){
+        boolean generate = teacherService.generateClassGrades(clazz, courseName);
+        return generate==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);
+
     }
 }

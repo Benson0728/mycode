@@ -94,7 +94,7 @@ public class AdminController {
 
     @GetMapping("/teachers/schedule/{teacherName}")//查看老师课表
     public Res checkTeacherSchedule(@PathVariable String teacherName){
-        List<StuCourseTeacher> TeacherSchedules = adminService.checkScheduleByTeacher(teacherName);
+        List<TeacherCourse> TeacherSchedules = adminService.checkScheduleByTeacher(teacherName);
         return new Res().success(TeacherSchedules);
     }
 

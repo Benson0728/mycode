@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.grade.mapper.CourseMapper;
-import com.grade.mapper.StuCourseTeacherMapper;
-import com.grade.mapper.StuGradesMapper;
-import com.grade.mapper.StuMapper;
+import com.grade.mapper.*;
 import com.grade.pojo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +22,8 @@ public class StudentService {
     StuCourseTeacherMapper stuCourseTeacherMapper;
     @Autowired
     CourseMapper courseMapper;
+    @Autowired
+    TeacherCourseMapper teacherCourseMapper;
 
 
     /**
@@ -130,17 +129,18 @@ public class StudentService {
      * @param stuName
      * @return
      */
+
     public boolean chooseCourses(String courseName,long stuID,String stuName){
         try {
-            QueryWrapper<StuCourseTeacher> qw=new QueryWrapper<StuCourseTeacher>()
+            QueryWrapper<TeacherCourse> qw=new QueryWrapper<TeacherCourse>()
                     .eq("course_name",courseName)
                     .select("course_name","day","time");
-            List<StuCourseTeacher> courseList = stuCourseTeacherMapper.selectList(qw);
+            List<TeacherCourse> courseList = teacherCourseMapper.selectList(qw);
             QueryWrapper<StuCourseTeacher> qw1 = new QueryWrapper<StuCourseTeacher>()
                     .eq("student_id", stuID);
             List<StuCourseTeacher> list = stuCourseTeacherMapper.selectList(qw1);
 
-            for (StuCourseTeacher courseLists : courseList) {
+            for (TeacherCourse courseLists : courseList) {
                 Integer day = courseLists.getDay();
                 Integer time = courseLists.getTime();
                 for (StuCourseTeacher StuCourse : list) {
@@ -155,7 +155,7 @@ public class StudentService {
             Course course = courseMapper.selectOne(qw2);
             String teacherName = course.getTeacherName();
 
-            for (StuCourseTeacher courseLists : courseList) {
+            for (TeacherCourse courseLists : courseList) {
                 Integer day = courseLists.getDay();
                 Integer time = courseLists.getTime();
             StuCourseTeacher sct = new StuCourseTeacher(stuID, stuName, courseName, day, time, teacherName);

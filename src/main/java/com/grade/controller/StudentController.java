@@ -9,11 +9,12 @@ import com.grade.result.Res;
 import com.grade.service.StudentService;
 import com.grade.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@Slf4j
 @RestController
 @RequestMapping("/students")
 public class StudentController {
@@ -23,6 +24,7 @@ public class StudentController {
     @PostMapping ("/login")   //学生登录
     public LoginRes studentLogin(long id,String password){
         Student student = studentService.selectById(id);
+        log.info("{}登陆了",id);
         boolean check=password.equals(student.getPassword());
         if (check==true)return new LoginRes<>().success(JwtUtils.createToken(student.getId(),student.getName()));
         return new LoginRes<>().fail();

@@ -6,13 +6,14 @@ import com.grade.result.LoginRes;
 import com.grade.result.Res;
 import com.grade.service.AdminService;
 import com.grade.utils.JwtUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-
+@Slf4j
 @RestController
 @RequestMapping("/admins")
 public class AdminController {
@@ -22,6 +23,7 @@ public class AdminController {
     @PostMapping("/login")   //管理员登录
     public LoginRes adminLogin(Integer id, String password){
         Admin admin = adminService.selectById(id);
+        log.info("{}登陆了",id);
         boolean check=password.equals(admin.getPassword());
         if (check==true)return new LoginRes<>().success(JwtUtils.createToken(admin.getId(),admin.getAdminName()));
         return new LoginRes<>().fail();

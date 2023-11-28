@@ -7,6 +7,7 @@ import com.grade.result.Res;
 import com.grade.service.TeacherService;
 import com.grade.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-
+@Slf4j
 @RestController
 @RequestMapping("/teachers")
 public class TeacherController {
@@ -24,9 +25,18 @@ public class TeacherController {
     @PostMapping ("/login")   //教师登录
     public LoginRes teacherLogin(long id, String password){
         Teacher teacher = teacherService.selectById(id);
+        log.info("{}登陆了",id);
         boolean check=password.equals(teacher.getPassword());
         if (check==true)return new LoginRes<>().success(JwtUtils.createToken(teacher.getId(),teacher.getName()));
         return new LoginRes<>().fail();
+    }
+
+    @GetMapping //显示教师个人信息
+    public Res selectInfo(){
+        Claims claims = JwtUtils.getClaims();
+        long id=Long.valueOf(claims.get("ID").toString());
+        Teacher teacher = teacherService.selectById(id);
+        return new Res<>().success(teacher);
     }
 
     @PutMapping  //修改密码

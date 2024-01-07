@@ -30,6 +30,8 @@ public class TeacherService {
     StuGradesMapper stuGradesMapper;
     @Autowired
     TeacherCourseMapper teacherCourseMapper;
+    @Autowired
+    TeacherPhotoMapper teacherPhotoMapper;
 
     /**
      * 查老师信息
@@ -324,5 +326,29 @@ public class TeacherService {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 将图片路径保存到数据库
+     * @param teacherName
+     * @param path
+     * @return int为1表示成功
+     */
+    public int savePhotoPath(String teacherName,String path){
+        TeacherPhoto teacherPhoto=new TeacherPhoto(teacherName,path);
+        int insert = teacherPhotoMapper.insert(teacherPhoto);
+        return insert;
+    }
+
+    /**
+     * 获取图片路径
+     * @param teacherName
+     * @return
+     */
+    public String getTeacherPhoto(String teacherName){
+        QueryWrapper<TeacherPhoto> qw=new QueryWrapper<TeacherPhoto>()
+                .eq("teachername",teacherName);
+        String photoPath = teacherPhotoMapper.selectOne(qw).getPhotoPath();
+        return photoPath;
     }
  }

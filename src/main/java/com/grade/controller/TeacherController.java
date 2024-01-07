@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 @Slf4j
 @RestController
@@ -135,4 +137,51 @@ public class TeacherController {
         return generate==true?new Res<>().success():new Res<>().fail(Message.OPERATION_FAILED);
 
     }
+
+    @PostMapping("/images")
+    public Res saveImages(@RequestParam("file") MultipartFile file){
+        Claims claims = JwtUtils.getClaims();
+        if(file.isEmpty()){return new Res<>().fail("图片为空");}
+        String username =(String) claims.get("username");
+        File folder=new File(System.getProperty("user.dir")+File.separator+username+File.separator+"头像"+File.separator+username+".jpg");
+        teacherService.savePhotoPath(username,folder.getPath());
+        if(!folder.exists()){folder.mkdirs();}
+        try {
+            file.transferTo(folder);
+            return new Res<>().success("文件上传成功");
+        } catch (IOException e) {
+           e.printStackTrace();
+           return new Res<>().fail("文件上传失败");
+        }
+    }
+
+    @GetMapping("/getImages")
+    public Res getImages() {
+        String username = (String) JwtUtils.getClaims().get("username");
+        String photoPath = teacherService.getTeacherPhoto(username);
+//        File photo=new File(photoPath);
+        try{
+//        FileInputStream fileInputStream = new FileInputStream(photo);
+//        ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
+//        byte[] buffer=new byte[4096];
+//        int bytesRead;
+//        while ((bytesRead=fileInputStream.read(buffer))!=-1){
+//            byteArrayOutputStream.write(buffer,0,bytesRead);
+//        }
+//        byte[] bytes = byteArrayOutputStream.toByteArray();
+//
+//        fileInputStream.close();
+//        byteArrayOutputStream.close();
+
+            byte[] bytes = Files.readAllBytes(Path.of(photoPath));
+            String base64Image = java.util.Base64.getEncoder().encodeToString(bytes);
+
+            return new Res<>().success(base64Image);}
+        catch (IOException e){
+            return new Res<>().fail("获取图片失败");
+        }
+    }
+
 }
+
+
